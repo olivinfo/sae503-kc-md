@@ -32,7 +32,6 @@ def test_search_quotes_success(client):
             {"quote": "Tonnerre de Brest !"}
         ]
 
-        # Recherche du mot "Brest"
         response = client.get('/search?keyword=Brest', headers={'Authorization': 'default_key'})
         
         assert response.status_code == 200
