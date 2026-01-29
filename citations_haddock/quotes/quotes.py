@@ -5,7 +5,7 @@ from redis import Redis
 from flasgger import Swagger
 from functools import wraps
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "backend-redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 APP_PORT = int(os.getenv("APP_PORT", 5001))
@@ -64,4 +64,5 @@ def delete_quote(quote_id):
     return jsonify({"message": "Citation supprimée"}), 200
 
 if __name__ == '__main__':
+
     app.run(host='0.0.0.0', port=APP_PORT)
