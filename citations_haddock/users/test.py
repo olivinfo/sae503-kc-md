@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import patch
+import pytest
 from users import app as flask_app  # Assurez-vous que le fichier se nomme users.py
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def test_get_users_success(client):
         ]
 
         response = client.get('/users', headers={'Authorization': 'default_key'})
-        
+
         assert response.status_code == 200
         assert len(response.json) == 2
         assert response.json[0]['name'] == "Tintin"
@@ -41,11 +41,11 @@ def test_add_user_success(client):
     """Vérifie l'ajout d'un nouvel utilisateur"""
     with patch('users.redis_client') as mock_redis:
         new_user = {"id": "3", "name": "Tournesol", "password": "pendule"}
-        
-        response = client.post('/users', 
+
+        response = client.post('/users',
                                headers={'Authorization': 'default_key'},
                                json=new_user)
-        
+
         assert response.status_code == 201
         assert response.json == {"message": "Utilisateur ajouté"}
         # Vérifie que les méthodes Redis ont bien été appelées
@@ -54,9 +54,9 @@ def test_add_user_success(client):
 
 def test_add_user_invalid_data(client):
     """Vérifie l'erreur si des données obligatoires manquent"""
-    response = client.post('/users', 
+    response = client.post('/users',
                            headers={'Authorization': 'default_key'},
                            json={"id": "4"}) # Il manque le nom
-    
+
     assert response.status_code == 400
     assert "ID et nom sont requis" in response.json['error']

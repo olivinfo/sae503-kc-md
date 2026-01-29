@@ -1,14 +1,20 @@
+"""
+Docstring for citations_haddock.quotes.quotes
+A Flask application to manage quotes with Redis as the database.
+Provides endpoints to add and delete quotes with authentication.
+"""
+
 import os
 import csv
+from functools import wraps
 from flask import Flask, request, jsonify
 from redis import Redis
 from flasgger import Swagger
-from functools import wraps
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-REDIS_DB = int(os.getenv("REDIS_DB", 0))
-APP_PORT = int(os.getenv("APP_PORT", 5001))
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_DB = os.getenv("REDIS_DB", "0")
+APP_PORT = os.getenv("APP_PORT", "5001")
 ADMIN_KEY = os.getenv("ADMIN_KEY", "default_key")
 CSV_FILE_QUOTES = os.getenv("CSV_FILE_QUOTES", "initial_data_quotes.csv")
 
@@ -49,7 +55,6 @@ def add_quote():
     key = f"quotes:{quote_id}"
     redis_client.hset(key, mapping={"user_id": user_id, "quote": quote})
     redis_client.sadd("quotes", key)
-    
     return jsonify({"message": "Citation ajoutée", "id": quote_id}), 201
 
 @app.route('/quotes/<int:quote_id>', methods=['DELETE'])

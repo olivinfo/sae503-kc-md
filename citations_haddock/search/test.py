@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import patch
+import pytest
 from search import app as flask_app
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def test_search_quotes_success(client):
     with patch('search.redis_client') as mock_redis:
         # Simulation des données dans Redis
         mock_redis.smembers.return_value = {"quotes:1", "quotes:2"}
-        
+
         # Simulation du retour de hgetall pour chaque citation
         mock_redis.hgetall.side_effect = [
             {"quote": "Mille sabords !"},
@@ -33,7 +33,7 @@ def test_search_quotes_success(client):
         ]
 
         response = client.get('/search?keyword=Brest', headers={'Authorization': 'default_key'})
-        
+
         assert response.status_code == 200
         assert len(response.json) == 1
         assert response.json[0] == "Tonnerre de Brest !"
@@ -45,6 +45,6 @@ def test_search_quotes_no_results(client):
         mock_redis.hgetall.return_value = {"quote": "Mille sabords !"}
 
         response = client.get('/search?keyword=Inconnu', headers={'Authorization': 'default_key'})
-        
+
         assert response.status_code == 200
         assert response.json == []

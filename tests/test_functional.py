@@ -1,8 +1,7 @@
-import requests
-import redis
-import time
 import logging
 from typing import Optional, Dict, Any
+import redis
+import requests
 
 # Configuration des URLs de base
 QUOTES_URL = "http://localhost:5001"
@@ -24,7 +23,7 @@ def cleanup_redis():
         r.flushdb()
         logger.info("Redis nettoyé avec succès.")
     except Exception as e:
-        logger.error(f"Erreur lors du nettoyage de Redis : {e}")
+        logger.error("Erreur lors du nettoyage de Redis : %s", e)
 
 # Fonction pour effectuer une requête avec gestion des erreurs
 def make_request(
@@ -35,7 +34,7 @@ def make_request(
     params: Optional[Dict[str, str]] = None,
 ) -> requests.Response:
     try:
-        response = requests.request(method, url, headers=headers, json=json, params=params)
+        response = requests.request(method, url, headers=headers, json=json, params=params, timeout=2)
         logger.info(f"Requête {method} {url} : {response.status_code}")
         return response
     except requests.exceptions.RequestException as e:
@@ -116,7 +115,6 @@ def test_delete_quote():
     quote_data = {"user_id": "1", "quote": "Citation à supprimer"}
     add_response = make_request("POST", f"{QUOTES_URL}/quotes", headers=HEADERS, json=quote_data)
     quote_id = add_response.json()["id"]
-    
     # Maintenant, supprimons la citation
     response = make_request("DELETE", f"{QUOTES_URL}/quotes/{quote_id}", headers=HEADERS)
     assert response.status_code == 200, f"Échec : {response.text}"
@@ -181,24 +179,24 @@ def test_integration_workflow():
     user_data = {"id": "100", "name": "Integration Test User", "password": "test123"}
     user_response = make_request("POST", f"{USERS_URL}/users", headers=HEADERS, json=user_data)
     assert user_response.status_code == 201
-    
+
     # 2. Ajouter une citation pour cet utilisateur
     quote_data = {"user_id": "100", "quote": "Citation d'intégration"}
     quote_response = make_request("POST", f"{QUOTES_URL}/quotes", headers=HEADERS, json=quote_data)
     assert quote_response.status_code == 201
     quote_id = quote_response.json()["id"]
-    
+
     # 3. Rechercher la citation
     search_response = make_request("GET", f"{SEARCH_URL}/search", headers=HEADERS, params={"keyword": "intégration"})
     assert search_response.status_code == 200
     assert len(search_response.json()) >= 1
-    
+
     # 4. Supprimer la citation
     delete_response = make_request("DELETE", f"{QUOTES_URL}/quotes/{quote_id}", headers=HEADERS)
     assert delete_response.status_code == 200
-    
+
     # 5. Vérifier que la citation a été supprimée
-    search_after_delete = make_request("GET", f"{SEARCH_URL}/search", headers=HEADERS, params={"keyword": "intégration"})
+    search_after_delete=make_request("GET", f"{SEARCH_URL}/search", headers=HEADERS, params={"keyword": "intégration"})
     assert search_after_delete.status_code == 200
     # La citation ne devrait plus être trouvée
     assert "Citation d'intégration" not in [quote for quote in search_after_delete.json()]
@@ -216,7 +214,7 @@ if __name__ == "__main__":
         test_add_user_missing_id()
         test_get_users()
         test_get_users_unauthorized()
-        
+
         # Tests citations
         test_add_quote()
         test_add_quote_missing_user_id()
@@ -225,16 +223,16 @@ if __name__ == "__main__":
         test_delete_quote()
         test_delete_quote_not_found()
         test_delete_quote_unauthorized()
-        
+
         # Tests recherche
         test_search_quotes()
         test_search_quotes_no_keyword()
         test_search_quotes_unauthorized()
         test_search_quotes_no_results()
-        
+
         # Tests d'intégration
         test_integration_workflow()
-        
+
         logger.info("Tous les tests ont réussi !")
     except AssertionError as e:
         logger.error(f"Test échoué : {e}")

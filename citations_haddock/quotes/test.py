@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import patch
+import pytest
 from quotes import app as flask_app
 
 @pytest.fixture
@@ -12,12 +12,12 @@ def test_add_quote_success(client):
     """Vérifie l'ajout d'une citation et la structure Redis"""
     with patch('quotes.redis_client') as mock_redis:
         mock_redis.incr.return_value = 10  # Simule l'ID généré
-        
+
         payload = {"user_id": "1", "quote": "Mille sabords !"}
-        response = client.post('/quotes', 
+        response = client.post('/quotes',
                                headers={'Authorization': 'default_key'},
                                json=payload)
-        
+
         assert response.status_code == 201
         assert response.json['id'] == 10
         # On vérifie que hset est appelé avec la bonne clé formatée
@@ -27,7 +27,7 @@ def test_add_quote_success(client):
 
 def test_add_quote_missing_data(client):
     """Vérifie l'erreur si le texte de la citation manque"""
-    response = client.post('/quotes', 
+    response = client.post('/quotes',
                            headers={'Authorization': 'default_key'},
                            json={"user_id": "1"}) # quote manquante
     assert response.status_code == 400
@@ -38,9 +38,9 @@ def test_delete_quote_success(client):
     with patch('quotes.redis_client') as mock_redis:
         # On simule que la citation existe
         mock_redis.hexists.return_value = True
-        
+
         response = client.delete('/quotes/5', headers={'Authorization': 'default_key'})
-        
+
         assert response.status_code == 200
         # Vérifie que la clé est supprimée ET retirée du set d'indexation
         mock_redis.delete.assert_called_with("quotes:5")
@@ -50,7 +50,7 @@ def test_delete_quote_not_found(client):
     """Vérifie l'erreur 404 si la citation n'existe pas"""
     with patch('quotes.redis_client') as mock_redis:
         mock_redis.hexists.return_value = False
-        
+
         response = client.delete('/quotes/99', headers={'Authorization': 'default_key'})
         assert response.status_code == 404
         assert "non trouvée" in response.json['error']

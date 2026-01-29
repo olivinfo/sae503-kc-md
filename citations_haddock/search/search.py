@@ -1,12 +1,12 @@
 import os
+from functools import wraps
 from flask import Flask, request, jsonify
 from redis import Redis
 from flasgger import Swagger
-from functools import wraps
 
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
-APP_PORT = int(os.getenv("APP_PORT", 5002))
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+APP_PORT = int(os.getenv("APP_PORT", "5002"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "default_key")
 
 app = Flask(__name__)
