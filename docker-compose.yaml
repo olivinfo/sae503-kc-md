@@ -2,7 +2,7 @@ services:
   users:
     image: kitami1/sae503-users:1.0.0
     ports:
-      - "5000:5000"
+      - "80:5000"
     depends_on:
       - redis
     environment:
@@ -16,7 +16,7 @@ services:
   quotes:
     image: kitami1/sae503-quotes:1.0.0
     ports:
-      - "5001:5000"
+      - "80:5001"
     depends_on:
       - redis
     environment:
@@ -30,7 +30,7 @@ services:
   search:
     image: kitami1/sae503-search:1.0.0
     ports:
-      - "5002:5000"
+      - "80:5002"
     depends_on:
       - redis
     environment:

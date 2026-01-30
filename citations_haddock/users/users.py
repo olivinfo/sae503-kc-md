@@ -6,7 +6,7 @@ from flasgger import Swagger
 from functools import wraps
 
 # Configuration des variables d'environnement
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_HOST = os.getenv("REDIS_HOST", "backend-redis.haddock.svc.cluster.local")
 REDIS_PORT = int(os.getenv("REDIS_PORT", 6379))
 REDIS_DB = int(os.getenv("REDIS_DB", 0))
 APP_PORT = int(os.getenv("APP_PORT", 5000))
