@@ -1,5 +1,5 @@
 FROM python:3.12-slim
-
+LABEL org.opencontainers.image.source=https://github.com/olivinfo/sae503-kc-md
 WORKDIR /app
 
 RUN apt-get update && apt-get dist-upgrade -y && apt-get install -y curl --no-install-recommends

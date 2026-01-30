@@ -1,5 +1,5 @@
 FROM python:3.12-slim
-
+LABEL org.opencontainers.image.source=https://github.com/olivinfo/sae503-kc-md
 WORKDIR /app
 
 RUN apt-get update && apt-get dist-upgrade -y && apt-get install -y curl --no-install-recommends
@@ -21,3 +21,4 @@ EXPOSE 5000
 HEALTHCHECK --interval=5s --timeout=2s --retries=2 --start-period=5s CMD curl --fail http://localhost:5000/users/health || exit 1
 
 CMD ["python", "users.py"]
+
