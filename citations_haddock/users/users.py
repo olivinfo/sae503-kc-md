@@ -69,12 +69,6 @@ if not redis_client.exists("token"):
         # Ajoute la clé du hash au set "token"
         redis_client.sadd("token", f"token:{uuid}")
 
-
-
-@app.route('/', methods=['GET'])
-def hello_world():
-    return jsonify({"message": "User Service Online"})
-
 @app.route('/users', methods=['GET'])
 @require_auth
 def get_users():

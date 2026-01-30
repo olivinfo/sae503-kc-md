@@ -107,6 +107,3 @@ services:
 networks:
   proxy:
     name: proxy
-
-
->>>>>>> 6d872d00981a4eab54268c8a9a25e2fe2de22d51
