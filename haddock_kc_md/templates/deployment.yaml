@@ -175,18 +175,18 @@ spec:
           service:
             name: {{ .Values.services.users.serviceName }}
             port:
-              number: {{ .Values.ingress.externalPort }}
+              number: {{ .Values.services.users.port }}
       - path: /quotes
         pathType: Prefix
         backend:
           service:
             name: {{ .Values.services.quotes.serviceName }}
             port:
-              number: {{ .Values.ingress.externalPort }}
+              number: {{ .Values.services.quotes.port }}
       - path: /search
         pathType: Prefix
         backend:
           service:
             name: {{ .Values.services.search.serviceName }}
             port:
-              number: {{ .Values.ingress.externalPort }}
+              number: {{ .Values.services.search.port }}

@@ -27,6 +27,5 @@
   ingress:
     name: reverse-proxy-haddock
     host: localhost.local
-    externalPort: 80
 
   adminKey: '["default_key"]'
