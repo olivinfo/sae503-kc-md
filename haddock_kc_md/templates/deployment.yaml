@@ -61,10 +61,13 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: REDIS_HOST
-          value: {{ .Values.redis.host | quote }}
-        - name: APP_PORT
-          value: "5000"
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host | quote }}
+          - name: ADMIN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: apps-secrets
+                key: ADMIN_KEY
 ---
 apiVersion: v1
 kind: Service
@@ -103,8 +106,13 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: REDIS_HOST
-          value: {{ .Values.redis.host | quote }}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host | quote }}
+          - name: ADMIN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: apps-secrets
+                key: ADMIN_KEY
 ---
 apiVersion: v1
 kind: Service
@@ -143,8 +151,13 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: REDIS_HOST
-          value: {{ .Values.redis.host | quote }}
+          - name: REDIS_HOST
+            value: {{ .Values.redis.host | quote }}
+          - name: ADMIN_KEY
+            valueFrom:
+              secretKeyRef:
+                name: apps-secrets
+                key: ADMIN_KEY
 ---
 apiVersion: v1
 kind: Service

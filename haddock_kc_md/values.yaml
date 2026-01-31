@@ -1,29 +1,32 @@
-namespace: haddock
-replicaCount: 2
-imageTag: "1.0.0"
-registry: ghcr.io/olivinfo
+  namespace: haddock
+  replicaCount: 2
+  imageTag: "1.0.0"
+  registry: ghcr.io/olivinfo
 
-services:
-  users:
-    name: kc-md-haddock-users    
-    serviceName: backend-users   
-    port: 80
-  search:
-    name: kc-md-haddock-search   
-    serviceName: backend-search
-    port: 80
+  services:
+    users:
+      name: kc-md-haddock-users    
+      serviceName: backend-users   
+      port: 80
 
-  quotes:
-    name: kc-md-haddock-quotes   
-    serviceName: backend-quotes
-    port: 80
+    search:
+      name: kc-md-haddock-search   
+      serviceName: backend-search
+      port: 80
 
-redis:
-  image: redis:8
-  host: backend-redis
-  port: 6379
+    quotes:
+      name: kc-md-haddock-quotes   
+      serviceName: backend-quotes
+      port: 80
 
-ingress:
-  name: reverse-proxy-haddock
-  host: localhost.local
-  externalPort: 80
+  redis:
+    image: redis:8
+    host: backend-redis
+    port: 6379
+
+  ingress:
+    name: reverse-proxy-haddock
+    host: localhost.local
+    externalPort: 80
+
+  adminKey: '["default_key"]'
