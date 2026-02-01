@@ -23,6 +23,6 @@
 
   ingress:
     name: reverse-proxy-haddock
-    host: localhost.local
+    host: haddock.172.18.253.222.nip.io
 
   adminKey: '["default_key"]'
