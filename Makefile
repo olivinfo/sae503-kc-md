@@ -42,6 +42,16 @@ install-trivy:
 	sudo apt-get update
 	sudo apt-get install trivy
 
+install-trivy-operator:
+	@echo "Installation de Trivy"
+	helm repo add aqua https://aquasecurity.github.io/helm-charts/
+	helm repo update
+	helm install trivy-operator aqua/trivy-operator \
+		--namespace trivy-system \
+		--create-namespace \
+		--set="trivy.ignoreUnfixed=true"
+
+
 build:
 	@echo "Construction et lancement des conteneurs Docker..."
 	clear
