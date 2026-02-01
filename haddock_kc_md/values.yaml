@@ -1,4 +1,4 @@
-  namespace: haddock
+  namespace: haddock-dev
   replicaCount: 2
   imageTag: "1.0.0"
   registry: kitami1
