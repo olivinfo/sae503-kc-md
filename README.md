@@ -60,20 +60,53 @@ graph TD
 
 ## 🔐 Système d'Authentification
 
-Le système utilise une authentification basée sur des clés API :
+Le système utilise une authentification basée sur des tokens générés dynamiquement et stockés dans Redis :
 
-- **Clé par défaut** : `default_key`
+- **Tokens par défaut** : `default_key` (pour l'admin)
+- **Génération dynamique** : Via l'endpoint `/users/login`
 - **Transmission** : Via l'en-tête HTTP `Authorization`
-- **Validation** : Chaque service valide indépendamment le token
+- **Validation** : Chaque service valide indépendamment le token contre Redis
+- **Stockage** : Les tokens sont stockés dans Redis avec des informations utilisateur
+
+### Fonctionnement du système d'authentification
+
+1. **Connexion utilisateur** : `POST /users/login` avec nom et mot de passe
+2. **Génération de token** : Le service génère un token aléatoire et le stocke dans Redis
+3. **Utilisation du token** : Le client utilise le token dans l'en-tête `Authorization`
+4. **Validation** : Chaque service vérifie l'existence et la validité du token dans Redis
 
 ### Exemple d'utilisation
 
 ```bash
-# Requête avec authentification
+# 1. Connexion pour obtenir un token
+curl -X POST http://localhost:5000/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Alice", "password": "inWonderland"}'
+
+# Réponse: {"token": "abc123...", "user_id": "1"}
+
+# 2. Utilisation du token pour accéder aux services protégés
 curl -X POST http://localhost:5000/quotes \
-  -H "Authorization: default_key" \
+  -H "Authorization: abc123..." \
   -H "Content-Type: application/json" \
   -d '{"user_id": "1", "quote": "Ma citation"}'
+
+# 3. Utilisation de la clé admin par défaut
+curl -X GET http://localhost:5000/users \
+  -H "Authorization: default_key"
+```
+
+### Structure des tokens dans Redis
+
+```
+# Set contenant tous les tokens valides
+token: {token1, token2, ...}
+
+# Hash contenant les informations pour chaque token
+token:{token_value}:
+  - id: "token_id"
+  - name: "user_name"
+  - user_id: "user_id"
 ```
 
 ## 🧪 Tests
@@ -159,16 +192,23 @@ sae503-kc-md/
 
 - `GET /` : Point d'entrée du service
 - `GET /users` : Liste tous les utilisateurs (authentification requise)
+- `GET /users/all` : Liste tous les utilisateurs (sans authentification)
+- `GET /users/token` : Liste tous les tokens d'authentification
 - `POST /users` : Crée un nouvel utilisateur (authentification requise)
+- `POST /users/login` : Connexion utilisateur et génération de token
+- `GET /users/health` : Vérification de santé du service
 
 ### Service Citations
 
+- `GET /quotes` : Récupère toutes les citations
 - `POST /quotes` : Ajoute une nouvelle citation (authentification requise)
 - `DELETE /quotes/<id>` : Supprime une citation (authentification requise)
+- `GET /quotes/health` : Vérification de santé du service
 
 ### Service Recherche
 
 - `GET /search?keyword=<mot>` : Recherche des citations (authentification requise)
+- `GET /search/health` : Vérification de santé du service
 
 ## 🔧 Configuration
 
@@ -182,11 +222,35 @@ REDIS_DB=0
 
 # Configuration Application
 APP_PORT=5000
-ADMIN_KEY=default_key
+ADMIN_KEY='["default_key"]'  # Liste de clés admin au format JSON
 
 # Fichiers de données
 CSV_FILE_USERS=initial_data_users.csv
 CSV_FILE_QUOTES=initial_data_quotes.csv
+```
+
+### Chargement initial des données
+
+Le système charge automatiquement les données initiales depuis des fichiers CSV au démarrage :
+
+1. **Utilisateurs** : Chargés depuis `initial_data_users.csv` si le set `users` n'existe pas dans Redis
+2. **Citations** : Chargées depuis `initial_data_quotes.csv` si la citation `quotes:1` n'existe pas dans Redis
+3. **Tokens admin** : Les clés définies dans `ADMIN_KEY` sont automatiquement ajoutées comme tokens valides
+
+### Format des fichiers CSV
+
+**Fichier utilisateurs (`initial_data_users.csv`):**
+```csv
+id,name,password
+1,Alice,inWonderland
+2,Bob,secret123
+```
+
+**Fichier citations (`initial_data_quotes.csv`):**
+```csv
+quote
+"La vie est comme une boîte de chocolats"
+"Le temps, c'est de l'argent"
 ```
 
 ## 🔨 Makefile - Commandes Utiles
