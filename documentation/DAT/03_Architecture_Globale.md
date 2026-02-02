@@ -118,6 +118,47 @@ L'application est divisée en trois microservices principaux :
 └─────────────┘       └─────────────────┘       └─────────────┘
 ```
 
+### 2.3.3 Exemple détaillé : Processus de login et génération de token
+
+```txt
+┌─────────────┐       ┌─────────────────┐       ┌─────────────┐
+│             │       │                 │       │             │
+│  Client     │─────▶│  Traefik         │─────▶│  Users      │
+│             │       │                 │       │  Service    │
+└─────────────┘       └─────────────────┘       └─────────────┘
+        ▲                     ▲                             │
+        │                     │                             ▼
+        │                     │                   ┌─────────────┐
+        │                     │                   │             │
+        │                     │                   │  Redis      │
+        │                     │                   │  (users)    │
+        │                     │                   └─────────────┘
+        │                     │                             ▲
+        │                     │                             │
+        │                     │                   ┌─────────────┐
+        │                     │                   │             │
+        │                     │                   │  Users      │
+        │                     │                   │  Service    │
+        │                     │                   │  (génère    │
+        │                     │                   │   token)    │
+        │                     │                   └─────────────┘
+        │                     │                             │
+        │                     │                             ▼
+        │                     │                   ┌─────────────┐
+        │                     │                   │             │
+        │                     │                   │  Redis      │
+        │                     │                   │  (token)    │
+        │                     │                   └─────────────┘
+        │                     │                             ▲
+        │                     │                             │
+┌─────────────┐       ┌─────────────────┐       ┌─────────────┐
+│             │       │                 │       │             │
+│  Client     │◀──────│  Traefik       │◀──────│  Users      │
+│  (reçoit    │       │                 │       │  Service    │
+│   token)    │       │                 │       │             │
+└─────────────┘       └─────────────────┘       └─────────────┘
+```
+
 ## 2.4 Diagrammes d'architecture
 
 ### 2.4.1 Diagramme de déploiement Kubernetes
@@ -157,6 +198,8 @@ graph TD
 
 ### 2.4.3 Diagramme de séquence
 
+**Processus d'ajout de citation avec authentification** :
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -166,12 +209,32 @@ sequenceDiagram
     
     Client->>Traefik: POST /quotes (avec token)
     Traefik->>QuotesService: Route la requête
-    QuotesService->>Redis: Vérifie le token
+    QuotesService->>Redis: Vérifie le token (token:abc123...)
     Redis-->>QuotesService: Token valide
     QuotesService->>Redis: Stocke la nouvelle citation
     Redis-->>QuotesService: Confirmation
     QuotesService-->>Traefik: Réponse 201 Created
     Traefik-->>Client: Retourne la réponse
+```
+
+**Processus de login et génération de token** :
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Traefik
+    participant UsersService
+    participant Redis
+    
+    Client->>Traefik: POST /users/login (avec credentials)
+    Traefik->>UsersService: Route la requête
+    UsersService->>Redis: Recherche utilisateur
+    Redis-->>UsersService: Retourne les données utilisateur
+    UsersService->>UsersService: Génère token aléatoire
+    UsersService->>Redis: Stocke le nouveau token
+    Redis-->>UsersService: Confirmation
+    UsersService-->>Traefik: Réponse 200 avec token
+    Traefik-->>Client: Retourne {"token": "abc123...", "user_id": "1"}
 ```
 
 ## 2.5 Matrice de flux réseau
@@ -186,6 +249,24 @@ sequenceDiagram
 | Users Service   | Redis            | TCP       | 6379   | Accès à la base de données      |
 | Quotes Service  | Redis            | TCP       | 6379   | Accès à la base de données      |
 | Search Service  | Redis            | TCP       | 6379   | Accès à la base de données      |
+
+## 2.6 Matrice des endpoints et authentification
+
+| Service         | Endpoint                | Méthode | Authentification | Description                     |
+|-----------------|-------------------------|---------|------------------|---------------------------------|
+| Users           | `/`                     | GET     | Non              | Point d'entrée                  |
+| Users           | `/users`                | GET     | Oui              | Liste des utilisateurs         |
+| Users           | `/users/all`            | GET     | Non              | Liste complète des utilisateurs|
+| Users           | `/users/token`          | GET     | Non              | Liste des tokens               |
+| Users           | `/users`                | POST    | Oui              | Création d'utilisateur         |
+| Users           | `/users/login`          | POST    | Non              | Connexion utilisateur          |
+| Users           | `/users/health`         | GET     | Non              | Vérification de santé          |
+| Quotes          | `/quotes`               | GET     | Non              | Liste des citations            |
+| Quotes          | `/quotes`               | POST    | Oui              | Ajout de citation              |
+| Quotes          | `/quotes/<id>`          | DELETE  | Oui              | Suppression de citation        |
+| Quotes          | `/quotes/health`        | GET     | Non              | Vérification de santé          |
+| Search          | `/search`               | GET     | Oui              | Recherche de citations         |
+| Search          | `/search/health`        | GET     | Non              | Vérification de santé          |
 
 ## 2.6 Topologie réseau
 

@@ -16,7 +16,6 @@ ENV REDIS_HOST="backend-redis"
 
 EXPOSE 5000
 
-# HEALTHCHECK --interval=1m --timeout=30s --retries=3 CMD curl --fail http://localhost:5000 || exit 1
 HEALTHCHECK --interval=5s --timeout=2s --retries=2 --start-period=5s CMD curl --fail http://localhost:5000/search/health || exit 1
 
 CMD ["python", "search.py"]

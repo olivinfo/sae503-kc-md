@@ -11,7 +11,6 @@ RUN adduser user
 USER user
 
 COPY users/ .
-COPY data/ .
 
 ENV REDIS_HOST="backend-redis"
 
